@@ -1,0 +1,50 @@
+# Arquivos de build
+**/bin/
+**/obj/
+**/out/
+
+# Arquivos de configuração do IDE
+**/.vs/
+**/.vscode/
+**/.idea/
+
+# Arquivos de teste
+**/TestResults/
+**/coverage/
+
+# Arquivos temporários
+**/*.tmp
+**/*.log
+**/*.cache
+
+# Arquivos do sistema
+**/.DS_Store
+**/Thumbs.db
+
+# Arquivos de backup
+**/*.bak
+**/*.backup
+
+# Arquivos de documentação
+**/README.md
+**/COMO_EXECUTAR.md
+
+# Scripts PowerShell
+**/*.ps1
+
+# Arquivos de solução (exceto o principal)
+**/*.sln
+!ECommerceMicroservices.sln
+
+# Arquivos de projeto (serão copiados individualmente)
+# **/*.csproj
+# **/*.csproj.user
+
+# Arquivos de configuração local
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Arquivos de banco de dados local
+**/*.db
+**/*.db-shm
+**/*.db-wal

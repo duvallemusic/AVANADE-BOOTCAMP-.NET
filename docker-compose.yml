@@ -1,92 +1,117 @@
 version: '3.8'
 
 services:
-  # SQL Server Database
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: ecommerce-sqlserver
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong@Passw0rd
-      - MSSQL_PID=Express
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserver_data:/var/opt/mssql
-    networks:
-      - ecommerce-network
-
-  # RabbitMQ Message Broker
+  # RabbitMQ para comunicação entre microserviços
   rabbitmq:
     image: rabbitmq:3-management
     container_name: ecommerce-rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - ecommerce-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  # Product Service
+  # ProductService
   productservice:
     build:
-      context: ./src/ProductService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/ProductService/Dockerfile
     container_name: ecommerce-productservice
+    ports:
+      - "7001:7001"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProductServiceDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
-    ports:
-      - "7001:80"
+      - ASPNETCORE_URLS=http://+:7001
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/ProductService.db
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+    volumes:
+      - product_data:/app/data
     depends_on:
-      - sqlserver
+      rabbitmq:
+        condition: service_healthy
     networks:
       - ecommerce-network
+    healthcheck:
+      test: ["CMD", "dotnet", "--info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Order Service
+  # OrderService
   orderservice:
     build:
-      context: ./src/OrderService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/OrderService/Dockerfile
     container_name: ecommerce-orderservice
+    ports:
+      - "7002:7002"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=OrderServiceDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
-      - ProductService__BaseUrl=http://productservice
-    ports:
-      - "7002:80"
+      - ASPNETCORE_URLS=http://+:7002
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/OrderService.db
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - ProductService__BaseUrl=http://productservice:7001
+    volumes:
+      - order_data:/app/data
     depends_on:
-      - sqlserver
-      - productservice
+      rabbitmq:
+        condition: service_healthy
+      productservice:
+        condition: service_healthy
     networks:
       - ecommerce-network
+    healthcheck:
+      test: ["CMD", "dotnet", "--info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # API Gateway
+  # ApiGateway
   apigateway:
     build:
-      context: ./src/ApiGateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/ApiGateway/Dockerfile
     container_name: ecommerce-apigateway
+    ports:
+      - "7000:7000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    ports:
-      - "7000:80"
+      - ASPNETCORE_URLS=http://+:7000
+      - ProductService__BaseUrl=http://productservice:7001
+      - OrderService__BaseUrl=http://orderservice:7002
     depends_on:
-      - productservice
-      - orderservice
+      productservice:
+        condition: service_healthy
+      orderservice:
+        condition: service_healthy
     networks:
       - ecommerce-network
+    healthcheck:
+      test: ["CMD", "dotnet", "--info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
-  sqlserver_data:
   rabbitmq_data:
+  product_data:
+  order_data:
 
 networks:
   ecommerce-network:

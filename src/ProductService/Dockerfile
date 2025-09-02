@@ -1,38 +1,37 @@
-# Use the official .NET 9 runtime as base image
+# Use a imagem oficial do .NET 9
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 7001
 
-# Use the official .NET 9 SDK for building
+# Use a imagem do SDK para build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy project files
+# Copiar arquivos de projeto
 COPY ["src/ProductService/ProductService.csproj", "src/ProductService/"]
 COPY ["src/Shared/Shared.csproj", "src/Shared/"]
 
-# Restore dependencies
+# Restaurar dependências
 RUN dotnet restore "src/ProductService/ProductService.csproj"
 
-# Copy all source code
+# Copiar todo o código fonte
 COPY . .
 
-# Build the application
+# Build da aplicação
 WORKDIR "/src/src/ProductService"
 RUN dotnet build "ProductService.csproj" -c Release -o /app/build
 
-# Publish the application
+# Publish da aplicação
 FROM build AS publish
 RUN dotnet publish "ProductService.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Final stage
+# Imagem final
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Create a non-root user
-RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
-USER appuser
+# Configurar variáveis de ambiente
+ENV ASPNETCORE_URLS=http://+:7001
+ENV ASPNETCORE_ENVIRONMENT=Development
 
 ENTRYPOINT ["dotnet", "ProductService.dll"]
