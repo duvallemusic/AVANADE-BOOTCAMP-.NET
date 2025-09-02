@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ecommerce-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - ecommerce-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ecommerce-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ecommerce-network
+
+  # Product Service
+  productservice:
+    build:
+      context: ./src/ProductService
+      dockerfile: Dockerfile
+    container_name: ecommerce-productservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProductServiceDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+    ports:
+      - "7001:80"
+    depends_on:
+      - sqlserver
+    networks:
+      - ecommerce-network
+
+  # Order Service
+  orderservice:
+    build:
+      context: ./src/OrderService
+      dockerfile: Dockerfile
+    container_name: ecommerce-orderservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=OrderServiceDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+      - ProductService__BaseUrl=http://productservice
+    ports:
+      - "7002:80"
+    depends_on:
+      - sqlserver
+      - productservice
+    networks:
+      - ecommerce-network
+
+  # API Gateway
+  apigateway:
+    build:
+      context: ./src/ApiGateway
+      dockerfile: Dockerfile
+    container_name: ecommerce-apigateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "7000:80"
+    depends_on:
+      - productservice
+      - orderservice
+    networks:
+      - ecommerce-network
+
+volumes:
+  sqlserver_data:
+  rabbitmq_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge

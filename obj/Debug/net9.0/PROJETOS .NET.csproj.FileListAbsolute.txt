@@ -1,0 +1,14 @@
+C:\Users\bruno\PROJETOS .NET\bin\Debug\net9.0\PROJETOS .NET.exe
+C:\Users\bruno\PROJETOS .NET\bin\Debug\net9.0\PROJETOS .NET.deps.json
+C:\Users\bruno\PROJETOS .NET\bin\Debug\net9.0\PROJETOS .NET.runtimeconfig.json
+C:\Users\bruno\PROJETOS .NET\bin\Debug\net9.0\PROJETOS .NET.dll
+C:\Users\bruno\PROJETOS .NET\bin\Debug\net9.0\PROJETOS .NET.pdb
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\PROJETOS .NET.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\PROJETOS .NET.AssemblyInfoInputs.cache
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\PROJETOS .NET.AssemblyInfo.cs
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\PROJETOS .NET.csproj.CoreCompileInputs.cache
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\PROJETOS .NET.dll
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\refint\PROJETOS .NET.dll
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\PROJETOS .NET.pdb
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\PROJETOS .NET.genruntimeconfig.cache
+C:\Users\bruno\PROJETOS .NET\obj\Debug\net9.0\ref\PROJETOS .NET.dll
