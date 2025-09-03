@@ -246,12 +246,7 @@ docker-compose up -d
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-## 📞 Suporte
 
-Para suporte, entre em contato através de:
-
-- Email: suporte@ecommerce.com
-- Issues: [GitHub Issues](https://github.com/your-repo/issues)
 
 ---
 
